@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Score Saber Downloader
-// @version      1.0
+// @version      1.0.1
 // @description  Adds a download button to Score Saber song pages
 // @author       bhackel
 // @match        https://scoresaber.com/leaderboard/*
@@ -28,23 +28,26 @@
     var url = "https://beatsaver.com/api/maps/by-hash/" + id;
 
     // Setup for Beat Saver API call
-    var reportAJAX_Error;
+    function error(rspObj) {
+        console.error("There was an error downloading the song: " + rspObj.status + " " + rspObj.statusText);
+    }
+
     function request() {
-        GM_xmlhttpRequest ( {
+        GM_xmlhttpRequest ({
             method:         "GET",
             url:            url,
             responseType:   "json",
             onload:         process_response,
-            onabort:        reportAJAX_Error,
-            onerror:        reportAJAX_Error,
-            ontimeout:      reportAJAX_Error
-        } );
+            onabort:        error,
+            onerror:        error,
+            ontimeout:      error
+        });
     }
 
     function process_response(rspObj) {
         // Check for invalid responses
         if (rspObj.status != 200 && rspObj.status != 304) {
-            reportAJAX_Error (rspObj);
+            error(rspObj);
             return;
         }
 
