@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Score Saber Downloader
+// @name         ScoreSaber Downloader
 // @version      1.0.1
 // @description  Adds a download button to Score Saber song pages
 // @author       bhackel
