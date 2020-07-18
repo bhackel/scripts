@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         soundcloud shuffle likes
-// @version      1.3
+// @version      1.4
 // @description  Adds a shuffle play button to "Likes" and playlists
 // @author       bhackel
 // @match        https://soundcloud.com/*
@@ -18,35 +18,36 @@
     */
     function insertButtonLoop() {
         var url = window.location.href;
+        url = url.split('?')[0];
         var btnShuffle = document.getElementsByClassName('bhackel-shuffle-likes')[0];
 
-        // check if button does not exist already, and that user is on likes or a playlist
+        // Check if button does not exist already, and that user is on likes or a playlist
         if (!btnShuffle && (url.includes("you/likes") || url.includes("/sets/"))) {
             btnShuffle = document.createElement('Button');
             btnShuffle.innerHTML = 'Shuffle Play';
             btnShuffle.onclick = function(){ setupLoad(this); };
 
-            // case for likes
+            // Case for likes
             if (url.includes("you/likes")) {
                 btnShuffle.className = 'bhackel-shuffle-likes sc-button sc-button-large';
                 btnShuffle.pageType = "Likes";
-                // check if top bar has loaded
+                // Check if top bar has loaded
                 var collectionTop = document.getElementsByClassName('collectionSection__top')[0];
                 if (collectionTop) {
-                    // insert the button above the grid of tracks
+                    // Insert the button above the grid of tracks
                     collectionTop.insertBefore(btnShuffle, collectionTop.children[2]);
                     btnShuffle.interval = 0;
                 } else {
                     setTimeout(insertButtonLoop, 1000);
                 }
-            // case for a playlist
+            // Case for a playlist
             } else if (url.includes("/sets/")) {
                 btnShuffle.className = 'bhackel-shuffle-likes sc-button sc-button-medium';
                 btnShuffle.pageType = "Playlist";
-                // check if action bar has loaded
+                // Check if action bar has loaded
                 var soundActions = document.getElementsByClassName('soundActions')[0];
                 if (soundActions) {
-                    // insert the button after other action buttons
+                    // Insert the button after other action buttons
                     soundActions.children[0].appendChild(btnShuffle);
                     btnShuffle.interval = 0;
                 } else {
@@ -62,10 +63,10 @@
        likes, then starts the scrolling loop. Or it stops the loop from running.
     */
     function setupLoad(btn) {
-        // check whether the loop is running or not
+        // Check whether the loop is running or not
         if (btn.interval === 0) {
             btn.innerHTML = 'Click to Stop Loading';
-            // list of tracks visible on screen. Check for playlist or collection
+            // The list of tracks visible on screen, which changes for a playlist or likes
             var tracks;
             if (btn.pageType === "Likes") {
                 tracks = document.getElementsByClassName('lazyLoadingList__list')[0];
@@ -73,27 +74,30 @@
                 tracks = document.getElementsByClassName('trackList__list')[0];
             }
             if (tracks.childElementCount > 2) {
-                // Set the current queue to the collection of tracks
+                // Reset the queue to the beginning of the list of tracks
                 var firstTrack = tracks.children[0];
                 var secondTrack = tracks.children[1];
 
-                // hardcoded yeyeye
                 var firstPlayButton = firstTrack.children[0].children[0].children[1].children[0];
                 var secondPlayButton = secondTrack.children[0].children[0].children[1].children[0];
-                // play 2, play 1, pause 1
+                // Reset by playing 2, playing 1, then pausing 1
                 secondPlayButton.click();
                 setTimeout(function(){ firstPlayButton.click(); }, 50);
                 setTimeout(function(){ firstPlayButton.click(); }, 100);
 
-                // open the queue if it is closed, to refresh queue
-                checkToggleQueue('open');
+                // Add the first track to the queue so it gets shuffled
+                document.getElementsByClassName("sc-button-more")[0].click()
+                document.getElementsByClassName("moreActions__button addToNextUp")[0].click()
 
-                // setup the scrolling loop - needs adequate time before running so the queue resets
+                // Open the queue to load it
+                toggleQueue('open');
+
+                // Setup the scrolling loop - Needs time before running so the queue loads
                 setTimeout(function(){
                     btn.interval = setInterval(function() { scrollQueue(btn); }, 500);
                 }, 3000);
             } else {
-                // the user has two or less tracks in track list; cannot shuffle play
+                // The user has two or less tracks in track list - cannot shuffle play
                 btn.innerHTML = 'Error: Too Few Tracks';
             }
         } else {
@@ -107,52 +111,61 @@
     */
     function scrollQueue(btn) {
         var queue = document.getElementsByClassName('queue')[0];
-        // check to see if the queue is open
+        // Check if the queue is open
         if (queue.classList.contains('m-visible')) {
-            // scroll the queue to the bottom, which loads new tracks below
+            // Scroll the queue to the bottom, loading new tracks below
             var scrollableQueue = document.getElementsByClassName('queue__scrollableInner')[0];
             var queueContainer = document.getElementsByClassName('queue__itemsHeight')[0];
             var scrollToHeight = parseInt(queueContainer.style.height);
             scrollableQueue.scroll(0,scrollToHeight);
 
-            // check if it has loaded all tracks, then shuffle and play
+            // Check if all tracks are loaded, then skip, shuffle, and play
             var autoplayDiv = document.getElementsByClassName('queue__fallback')[0];
             if (autoplayDiv) {
                 clearInterval(btn.interval);
                 btn.interval = 0;
-                shuffleAndPlay(btn);
+                play(btn);
             }
         } else {
-            // open the queue if it is not open
-            checkToggleQueue('open');
+            // Open the queue if it is closed
+            toggleQueue('open');
         }
     }
 
-    /* Shuffles the queue, then plays it
+    /* Shuffles the queue, skips the first track, then plays it
     */
-    function shuffleAndPlay(btn) {
+    function play(btn) {
         btn.innerHTML = 'Shuffle Play';
         var playButton = document.getElementsByClassName('playControl')[0];
         var shuffleButton = document.getElementsByClassName('shuffleControl')[0];
-        // only shuffle/play if it is disabled already
-        if (!shuffleButton.classList.contains('m-shuffling')) {
+        var skipButton = document.getElementsByClassName("skipControl__next")[0];
+
+        // Re-Shuffle tracks if shuffle is enabled, and enable shuffle if it is disabled
+        if (shuffleButton.classList.contains('m-shuffling')) {
+            shuffleButton.click();
+            shuffleButton.click();
+        } else if (!shuffleButton.classList.contains('m-shuffling')) {
             shuffleButton.click();
         }
-        if (!playButton.classList.contains('playing')) {
-            playButton.click();
-        }
 
-        // close the queue if it is open
-        checkToggleQueue('close');
+        // Skip the duplicate first track that was added previously
+        // This also begins playback
+        skipButton.click();
+
+        // Close the queue if it is open
+        toggleQueue('close');
+
+        // Add focus back to the play/pause button so keybinds work
+        playButton.focus()
     }
 
     /* Opens or closes the song queue
     */
-    function checkToggleQueue(changeToState) {
+    function toggleQueue(changeToState) {
         var queue = document.getElementsByClassName('queue')[0];
-        var queueOpen = queue.classList.contains('m-visible');
-        // toggle queue if the queue is open and it should be closed, or if it's closed and should be open
-        if ((queueOpen && changeToState === 'close') || (!queueOpen && changeToState === 'open')) {
+        var isQueueOpen = queue.classList.contains('m-visible');
+        // Toggle queue if the queue is open and it should be closed, or if it's closed and should be open
+        if ((isQueueOpen && changeToState === 'close') || (!isQueueOpen && changeToState === 'open')) {
             var queueTrigger = document.getElementsByClassName('playbackSoundBadge__queueCircle')[0];
             queueTrigger.click();
         }
