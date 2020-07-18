@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         ScoreSaber Downloader
-// @version      1.1
+// @version      1.2
 // @description  Adds a download button to Score Saber song pages
 // @author       bhackel
 // @match        https://scoresaber.com/leaderboard/*
@@ -22,16 +22,21 @@
     // Create buttons with text, function, and classes
     var oneclickButton = document.createElement('Button');
     oneclickButton.className = "bhackel-button button is-dark has-background-grey-dark";
-    oneclickButton.innerHTML = "OneClick Download";
+    oneclickButton.innerHTML = "OneClick";
     oneclickButton.addEventListener("click", oneclick);
 
     var zipButton = document.createElement('Button');
     zipButton.className = "bhackel-button button is-dark has-background-grey-dark";
-    zipButton.innerHTML = "Zip Download";
+    zipButton.innerHTML = "Zip";
     zipButton.addEventListener("click", zip);
 
+    var previewButton = document.createElement('Button');
+    previewButton.className = "bhackel-button button is-dark has-background-grey-dark";
+    previewButton.innerHTML = "View Map";
+    previewButton.addEventListener("click", preview);
+
     // Add the buttons to the page
-    rightBoxDiv.append(oneclickButton, zipButton);
+    rightBoxDiv.append(oneclickButton, zipButton, previewButton);
 
     // Setup for Beat Saver API call - error handling
     function error(rspObj) {
@@ -68,7 +73,6 @@
     function oneclick() {
         // Create a OneClick URL from the API response
         var oneclick_url = 'beatsaver://' + response.key
-
         // Open the URL
         window.location.href = oneclick_url;
     }
@@ -76,9 +80,15 @@
     function zip() {
         // Create a zip download URL from the API response
         var zip_url = 'https://beatsaver.com' + response.directDownload;
-
         // Open the URL
         window.location.href = zip_url;
+    }
+
+    function preview() {
+        // Create a map preview URL from the API response
+        var preview_url = 'https://skystudioapps.com/bs-viewer/?id=' + response.key
+        // Open the URL in a new tab
+        window.open(preview_url,'_blank');
     }
 
 })();
