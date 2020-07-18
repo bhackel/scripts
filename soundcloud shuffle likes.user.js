@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         soundcloud shuffle likes
-// @version      1.4
+// @version      1.4.1
 // @description  Adds a shuffle play button to "Likes" and playlists
 // @author       bhackel
 // @match        https://soundcloud.com/*
@@ -80,10 +80,15 @@
 
                 var firstPlayButton = firstTrack.children[0].children[0].children[1].children[0];
                 var secondPlayButton = secondTrack.children[0].children[0].children[1].children[0];
-                // Reset by playing 2, playing 1, then pausing 1
+                // Reset by playing 2, playing 1, then pausing playback
                 secondPlayButton.click();
                 setTimeout(function(){ firstPlayButton.click(); }, 50);
-                setTimeout(function(){ firstPlayButton.click(); }, 100);
+                setTimeout(function(){
+                    var playButton = document.getElementsByClassName('playControl')[0];
+                    if (playButton.classList.contains('playing')) {
+                        playButton.click();
+                    }
+                }, 150);
 
                 // Add the first track to the queue so it gets shuffled
                 document.getElementsByClassName("sc-button-more")[0].click()
