@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         ScoreSaber Downloader
-// @version      1.2
+// @version      1.3
 // @description  Adds a download button to Score Saber song pages
 // @author       bhackel
 // @match        https://scoresaber.com/leaderboard/*
@@ -86,7 +86,22 @@
 
     function preview() {
         // Create a map preview URL from the API response
-        var preview_url = 'https://skystudioapps.com/bs-viewer/?id=' + response.key
+        var preview_url = 'https://skystudioapps.com/bs-viewer/?id=' + response.key;
+
+        // Get the selected difficulty as a string
+        var difficulties = [];
+        var difficulties_list = Array.from(document.getElementsByClassName("tabs")[0].children[0].children);
+        difficulties_list.forEach(function(x) {
+            difficulties.push(x.textContent);
+        })
+
+        // Find the index of the selected difficulty
+        var difficulty = document.getElementsByClassName("is-active")[0].textContent;
+        difficulty = difficulties.indexOf(difficulty);
+
+        // Add difficulty index to the URL
+        preview_url += '&difficulty=' + difficulty;
+
         // Open the URL in a new tab
         window.open(preview_url,'_blank');
     }
