@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         ScoreSaber Downloader
-// @version      1.3
+// @version      1.3.1
 // @description  Adds a download button to Score Saber song pages
 // @author       bhackel
 // @match        https://scoresaber.com/leaderboard/*
@@ -88,21 +88,28 @@
         // Create a map preview URL from the API response
         var preview_url = 'https://skystudioapps.com/bs-viewer/?id=' + response.key;
 
-        // Get the selected difficulty as a string
         var difficulties = [];
-        var difficulties_list = Array.from(document.getElementsByClassName("tabs")[0].children[0].children);
-        difficulties_list.forEach(function(x) {
-            difficulties.push(x.textContent);
-        })
+        var difficulty = 0;
+
+        // Get all difficulties for the song
+        var difficulties_dict = response.metadata.difficulties;
+        if (difficulties_dict.easy === true) { difficulties.push('Easy'); }
+        if (difficulties_dict.normal === true) { difficulties.push('Normal'); }
+        if (difficulties_dict.hard === true) { difficulties.push('Hard'); }
+        if (difficulties_dict.expert === true) { difficulties.push('Expert'); }
+        if (difficulties_dict.expertPlus === true) { difficulties.push('Expert+'); }
 
         // Find the index of the selected difficulty
-        var difficulty = document.getElementsByClassName("is-active")[0].textContent;
-        difficulty = difficulties.indexOf(difficulty);
+        var difficulty_str = document.getElementsByClassName("is-active")[0];
+        if (difficulty_str) {
+            difficulty = difficulties.indexOf(difficulty_str.textContent);
+        } else {
+            // For One Saber, no difficulty is selected on the page
+            difficulty = '0&mode=1'
+        }
 
-        // Add difficulty index to the URL
+        // Add difficulty index to the URL, and open it
         preview_url += '&difficulty=' + difficulty;
-
-        // Open the URL in a new tab
         window.open(preview_url,'_blank');
     }
 
