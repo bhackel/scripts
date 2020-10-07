@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         ScoreSaber Downloader
-// @version      1.3.1
+// @version      1.3.2
 // @description  Adds a download button to Score Saber song pages
 // @author       bhackel
 // @match        https://scoresaber.com/leaderboard/*
@@ -92,20 +92,18 @@
         var difficulty = 0;
 
         // Get all difficulties for the song
-        var difficulties_dict = response.metadata.difficulties;
-        if (difficulties_dict.easy === true) { difficulties.push('Easy'); }
-        if (difficulties_dict.normal === true) { difficulties.push('Normal'); }
-        if (difficulties_dict.hard === true) { difficulties.push('Hard'); }
-        if (difficulties_dict.expert === true) { difficulties.push('Expert'); }
-        if (difficulties_dict.expertPlus === true) { difficulties.push('Expert+'); }
+        var difficulties_dict = response.metadata.characteristics[0].difficulties;
+        if (difficulties_dict.easy) { difficulties.push('Easy'); }
+        if (difficulties_dict.normal) { difficulties.push('Normal'); }
+        if (difficulties_dict.hard) { difficulties.push('Hard'); }
+        if (difficulties_dict.expert) { difficulties.push('Expert'); }
+        if (difficulties_dict.expertPlus) { difficulties.push('Expert+'); }
 
         // Find the index of the selected difficulty
         var difficulty_str = document.getElementsByClassName("is-active")[0];
+        // For other modes, the page doesn't show a selected difficulty
         if (difficulty_str) {
             difficulty = difficulties.indexOf(difficulty_str.textContent);
-        } else {
-            // For One Saber, no difficulty is selected on the page
-            difficulty = '0&mode=1'
         }
 
         // Add difficulty index to the URL, and open it
