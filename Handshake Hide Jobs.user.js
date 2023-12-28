@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Handshake Hide Jobs
 // @namespace    https://github.com/bhackel
-// @version      1.0
+// @version      1.1
 // @description  Add a button to hide jobs on Handshake
 // @author       bhackel
-// @match        https://ucsd.joinhandshake.com/stu/postings*
+// @match        https://*.joinhandshake.com/stu/postings*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=joinhandshake.com
 // @grant        GM_setValue
 // @grant        GM_getValue
