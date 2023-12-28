@@ -8,6 +8,7 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=joinhandshake.com
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @license      MIT
 // ==/UserScript==
 
 (function() {
